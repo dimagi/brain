@@ -10,6 +10,12 @@ from .abstract import Fetcher, Normalizer, Dataset
 
 
 class WineFetcher(Fetcher):
+    """
+    Fetches data from the wine dataset.
+    Download the dataset here: http://archive.ics.uci.edu/ml/machine-learning-databases/wine/
+
+    Place the wine.data file in data/wine/wine.data
+    """
 
     data_filepath = os.path.join(PROJECT_ROOT, 'data', 'wine', 'wine.data')
     n_cols = 13
