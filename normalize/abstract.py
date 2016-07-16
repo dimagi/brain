@@ -22,4 +22,5 @@ class Normalizer(object):
         raise NotImplementedError()
 
 
-Dataset = namedtuple('Dataset', ['train', 'test', 'train_targets', 'test_targets'])
+# columns are a inorder list of column headers for the train and test set
+Dataset = namedtuple('Dataset', ['columns', 'train', 'test', 'train_targets', 'test_targets'])

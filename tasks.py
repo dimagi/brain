@@ -22,17 +22,8 @@ def run(ctx, classifier=''):
     learner = to_class(classifier_conf['learner'])()
 
     learner.fit(normalized_dataset.train, normalized_dataset.train_targets)
-    predictions = learner.predict(normalized_dataset.test)
-
-    correct = 0
-    wrong = 0
-    for idx, prediction in enumerate(predictions):
-        if prediction == normalized_dataset.test_targets[idx]:
-            correct += 1
-        else:
-            wrong += 1
-
-    print 'You got {} correct! and {} wrong!'.format(correct, wrong)
+    score = learner.score(normalized_dataset.test, normalized_dataset.test_targets)
+    print score
 
 
 def to_class(class_dot_path):
