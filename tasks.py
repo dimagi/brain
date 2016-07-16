@@ -12,18 +12,30 @@ def run(ctx, classifier=''):
         return
 
     classifier_conf = CLASSIFIERS[classifier]
-
     fetcher = to_class(classifier_conf['fetcher'])()
-
     normalizer = to_class(classifier_conf['normalizer'])
-
     normalized_dataset = normalizer.normalize(fetcher.dataset())
 
     learner = to_class(classifier_conf['learner'])()
-
     learner.fit(normalized_dataset.train, normalized_dataset.train_targets)
+
     score = learner.score(normalized_dataset.test, normalized_dataset.test_targets)
     print score
+
+
+@task
+def optimize(ctx, classifier=''):
+    if not classifier:
+        print 'Must specify classifier: invoke run <classifier>'
+        return
+
+    classifier_conf = CLASSIFIERS[classifier]
+    fetcher = to_class(classifier_conf['fetcher'])()
+    normalizer = to_class(classifier_conf['normalizer'])
+    normalized_dataset = normalizer.normalize(fetcher.dataset())
+
+    learner = to_class(classifier_conf['learner'])()
+    learner.cross_validate(normalized_dataset.train, normalized_dataset.train_targets)
 
 
 def to_class(class_dot_path):

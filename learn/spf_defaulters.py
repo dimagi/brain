@@ -1,12 +1,12 @@
 import random
-from sklearn import svm
+from sklearn import svm, cross_validation
 
 
 class SpfDefaultersLearn(object):
 
     def __init__(self, gamma=0.001, C=100):
-        self.gamma = gamma
-        self.C = C
+        self.gamma = gamma  # aproximate optimial is 0.001
+        self.C = C  # Optmial is 100
         self.model = None
 
     def fit(self, data, target):
@@ -14,7 +14,22 @@ class SpfDefaultersLearn(object):
         self.model.fit(data, target)
 
     def cross_validate(self, data, target):
-        pass
+        gamma = [0.0001, 0.001, 0.01, 0.1, 1]
+        for g_val in gamma:
+            tmp_model = svm.SVC(gamma=g_val, C=self.C, probability=True)
+            scores = cross_validation.cross_val_score(
+                tmp_model, data, target[:, 0], cv=5
+            )
+            print("Accuracy for %s: %0.2f (+/- %0.2f)" % (str(g_val), scores.mean(), scores.std() * 2))
+
+        C = [0.1, 1, 10, 100, 1000]
+
+        for c_val in C:
+            tmp_model = svm.SVC(gamma=self.gamma, C=c_val, probability=True)
+            scores = cross_validation.cross_val_score(
+                tmp_model, data, target[:, 0], cv=5
+            )
+            print("Accuracy for %s: %0.2f (+/- %0.2f)" % (str(c_val), scores.mean(), scores.std() * 2))
 
     def predict(self, datum):
         if not self.model:
