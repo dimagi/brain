@@ -28,6 +28,10 @@ class SpfDefaultersFetcher(Fetcher):
         'moved_away',
         'next_appt_type_pmtct',
         'village',
+        'current_status',
+        'late',
+        'given_birth',
+        'contacted',
     ]
 
     def __init__(self, pct_train=0.8):
@@ -94,18 +98,30 @@ class SpfDefaultersNormalizer(Normalizer):
 
     @staticmethod
     def health_status(column_data):
-        le = preprocessing.LabelEncoder()
-        le.fit(column_data)
-        return le.transform(column_data)
+        return SpfDefaultersNormalizer._labeled_data(column_data)
+
+    @staticmethod
+    def given_birth(column_data):
+        return SpfDefaultersNormalizer._labeled_data(column_data)
 
     @staticmethod
     def next_appt_type_pmtct(column_data):
-        le = preprocessing.LabelEncoder()
-        le.fit(column_data)
-        return le.transform(column_data)
+        return SpfDefaultersNormalizer._labeled_data(column_data)
 
     @staticmethod
     def village(column_data):
+        return SpfDefaultersNormalizer._labeled_data(column_data)
+
+    @staticmethod
+    def current_status(column_data):
+        return SpfDefaultersNormalizer._labeled_data(column_data)
+
+    @staticmethod
+    def late(column_data):
+        return map(int, column_data)
+
+    @staticmethod
+    def _labeled_data(column_data):
         le = preprocessing.LabelEncoder()
         le.fit(column_data)
         return le.transform(column_data)

@@ -1,5 +1,6 @@
+import numpy
 import random
-from sklearn import svm, cross_validation
+from sklearn import svm, cross_validation, linear_model
 
 
 class SpfDefaultersLearn(object):
@@ -12,6 +13,22 @@ class SpfDefaultersLearn(object):
     def fit(self, data, target):
         self.model = svm.SVC(gamma=self.gamma, C=self.C, probability=True)
         self.model.fit(data, target)
+
+    def relevance(self, dataset, column):
+        regression = linear_model.LinearRegression()
+        idx = list(dataset.columns).index(column)
+
+        def reshape(data):
+            return numpy.reshape(data, (-1, 1))
+
+        regression.fit(
+            reshape(dataset.train[:, idx]).astype(numpy.float),
+            dataset.train_targets.astype(numpy.float),
+        )
+        print regression.score(
+            reshape(dataset.test[:, idx]).astype(numpy.float),
+            dataset.test_targets.astype(numpy.float),
+        )
 
     def cross_validate(self, data, target):
         gamma = [0.0001, 0.001, 0.01, 0.1, 1]

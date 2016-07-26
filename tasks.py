@@ -44,3 +44,24 @@ def to_class(class_dot_path):
     cls = getattr(module, cls_name)
 
     return cls
+
+
+@task
+def relevance(ctx, classifier='', column=''):
+    if not classifier:
+        print 'Must specify classifier: invoke relevance <classifier> <column>'
+        return
+    if not column:
+        print 'Must specify column: invoke relevance <classifier> <column>'
+        return
+
+    classifier_conf = CLASSIFIERS[classifier]
+    fetcher = to_class(classifier_conf['fetcher'])()
+    normalizer = to_class(classifier_conf['normalizer'])
+    normalized_dataset = normalizer.normalize(fetcher.dataset())
+
+    learner = to_class(classifier_conf['learner'])()
+    learner.relevance(
+        normalized_dataset,
+        column,
+    )
