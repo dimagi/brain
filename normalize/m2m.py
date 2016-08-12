@@ -139,10 +139,16 @@ class M2MNormalizer(Normalizer):
     @staticmethod
     def age(column_data):
         def classify(age):
-            if int(age) < 25:
+            if int(age) < 16:
                 return 'young'
-            elif int(age) >= 25 or int(age) < 50:
-                return 'middle-age'
+            elif int(age) >= 16 and int(age) < 25:
+                return 'young-adult'
+            elif int(age) >= 25 and int(age) < 30:
+                return '25-30'
+            elif int(age) >= 30 and int(age) < 35:
+                return '30-35'
+            elif int(age) >= 35 and int(age) < 40:
+                return '35-40'
             else:
                 return 'old'
         return M2MNormalizer._labeled_data(map(classify, column_data))
