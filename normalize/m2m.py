@@ -38,7 +38,7 @@ class M2MFetcher(Fetcher):
     """
     Plase the mother case data in a csv file in data/m2m/mothers.csv
     """
-    data_filepath = os.path.join(PROJECT_ROOT, 'data', 'm2m', 'mothers_small.csv')
+    data_filepath = os.path.join(PROJECT_ROOT, 'data', 'm2m', 'mothers_small_tail.csv')
     target_column = 'next_visit_date'
     columns = [
         'age',
