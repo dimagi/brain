@@ -1,12 +1,15 @@
 import os
+import numpy
 from dateutil.parser import parse
 from datetime import datetime
 
 from sklearn import preprocessing
+from imblearn.datasets import make_imbalance
 
 from settings import PROJECT_ROOT
 from .abstract import Fetcher, Normalizer, Dataset
 from .utils import csv_fetch
+from ggplot import qplot
 
 LTFU_DAYS = 10
 
@@ -110,14 +113,28 @@ class M2MNormalizer(Normalizer):
 
     @classmethod
     def normalize(cls, dataset):
+        def reshape(data):
+            return numpy.reshape(data, (-1, 1))
+
         for idx, column in enumerate(dataset.columns):
             dataset.train[:, idx] = getattr(cls, column, cls.default_normalize)(dataset.train[:, idx])
             dataset.test[:, idx] = getattr(cls, column, cls.default_normalize)(dataset.test[:, idx])
 
         dataset.train_targets[:, 0] = getattr(cls, 'target')(dataset.train_targets[:, 0])
         dataset.test_targets[:, 0] = getattr(cls, 'target')(dataset.test_targets[:, 0])
-
-        return dataset
+        train_resampled, train_targets_resampled = make_imbalance(
+            dataset.train,
+            dataset.train_targets,
+            0.99,
+            min_c_='0',
+        )
+        return Dataset(
+            columns=dataset.columns,
+            train=train_resampled,
+            train_targets=reshape(train_targets_resampled),
+            test=dataset.test,
+            test_targets=dataset.test_targets,
+        )
 
     @staticmethod
     def default_normalize(column_data):
