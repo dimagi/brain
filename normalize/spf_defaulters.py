@@ -1,13 +1,10 @@
 import os
-import csv
-import random
-from operator import itemgetter
 
-import numpy
 from sklearn import preprocessing
 
 from settings import PROJECT_ROOT
-from .abstract import Fetcher, Normalizer, Dataset
+from .abstract import Normalizer, Dataset, Fetcher
+from .utils import csv_fetch
 
 MISSING = '---'
 
@@ -38,28 +35,11 @@ class SpfDefaultersFetcher(Fetcher):
         self.pct_train = pct_train
 
     def dataset(self):
-        train = numpy.array([])
-        test = numpy.array([])
-        train_targets = numpy.array([])
-        test_targets = numpy.array([])
-        getter = itemgetter(*self.columns)
-
-        with open(self.data_filepath, 'rb') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if random.random() <= self.pct_train:
-                    train = numpy.append(train, getter(row), axis=0)
-                    train_targets = numpy.append(train_targets, [row[self.target_column]], axis=0)
-                else:
-                    test = numpy.append(test, getter(row), axis=0)
-                    test_targets = numpy.append(test_targets, [row[self.target_column]], axis=0)
-
-        return Dataset(
-            columns=numpy.array(self.columns),
-            test=numpy.reshape(test, (-1, len(self.columns))),
-            train=numpy.reshape(train, (-1, len(self.columns))),
-            test_targets=numpy.reshape(test_targets, (-1, 1)),
-            train_targets=numpy.reshape(train_targets, (-1, 1)),
+        return csv_fetch(
+            self.data_filepath,
+            self.columns,
+            self.target_column,
+            self.pct_train,
         )
 
 

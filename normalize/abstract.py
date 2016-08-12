@@ -5,12 +5,8 @@ from collections import namedtuple
 class Fetcher(object):
     __metaclass__ = ABCMeta
 
-    def data():
+    def dataset():
         """Returns an iterator to iterate over the dataset"""
-        raise NotImplementedError()
-
-    def targets():
-        """Returns an iterator to iterate over the labels"""
         raise NotImplementedError()
 
 
