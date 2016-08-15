@@ -12,7 +12,7 @@ from .utils import csv_fetch
 from ggplot import qplot
 
 LTFU_DAYS = 10
-
+DATE_OF_DOWNLOAD = datetime(2016, 7, 29)  # Date when dataset was fetched
 
 def explode_appointment(prefix):
     """
@@ -122,19 +122,7 @@ class M2MNormalizer(Normalizer):
 
         dataset.train_targets[:, 0] = getattr(cls, 'target')(dataset.train_targets[:, 0])
         dataset.test_targets[:, 0] = getattr(cls, 'target')(dataset.test_targets[:, 0])
-        train_resampled, train_targets_resampled = make_imbalance(
-            dataset.train,
-            dataset.train_targets,
-            0.99,
-            min_c_='0',
-        )
-        return Dataset(
-            columns=dataset.columns,
-            train=train_resampled,
-            train_targets=reshape(train_targets_resampled),
-            test=dataset.test,
-            test_targets=dataset.test_targets,
-        )
+        return dataset
 
     @staticmethod
     def default_normalize(column_data):
@@ -144,7 +132,7 @@ class M2MNormalizer(Normalizer):
     def target(column_data):
         def classify(date):
             try:
-                return int((parse(date) - datetime.today()).days > LTFU_DAYS)
+                return int((DATE_OF_DOWNLOAD - parse(date)).days > LTFU_DAYS)
             except ValueError:
                 return 0
 
@@ -155,6 +143,7 @@ class M2MNormalizer(Normalizer):
 
     @staticmethod
     def age(column_data):
+        # <15, 15-24, over 25 are the usual PEPFAR
         def classify(age):
             if int(age) < 16:
                 return 'young'

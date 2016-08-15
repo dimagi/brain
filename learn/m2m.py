@@ -88,7 +88,6 @@ class DummyM2MLearn(object):
     def fit(self, data, target):
         # Finds the probability that a person is a defaulter
         self.model = sum(map(int, target[:, 0])) / float(len(target[:, 0]))
-        print self.model
 
     def score(self, datum, target):
         correct = 0
