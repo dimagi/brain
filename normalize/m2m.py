@@ -116,13 +116,39 @@ class M2MNormalizer(Normalizer):
         def reshape(data):
             return numpy.reshape(data, (-1, 1))
 
-        for idx, column in enumerate(dataset.columns):
-            dataset.train[:, idx] = getattr(cls, column, cls.default_normalize)(dataset.train[:, idx])
-            dataset.test[:, idx] = getattr(cls, column, cls.default_normalize)(dataset.test[:, idx])
+        idx = 0
+        normalized_train = dataset.train
+        normalized_test = dataset.test
+        normalized_train_targets = dataset.train_targets
+        normalized_test_targets = dataset.test_targets
 
-        dataset.train_targets[:, 0] = getattr(cls, 'target')(dataset.train_targets[:, 0])
-        dataset.test_targets[:, 0] = getattr(cls, 'target')(dataset.test_targets[:, 0])
-        return dataset
+        for column in dataset.columns:
+            normalized_train, index_to_add = cls._apply_normalize(normalized_train, column, idx)
+            normalized_test, index_to_add = cls._apply_normalize(normalized_test, column, idx)
+            idx += index_to_add
+
+        normalized_train_targets, _ = cls._apply_normalize(normalized_train_targets, 'target', 0)
+        normalized_test_targets, _ = cls._apply_normalize(normalized_test_targets, 'target', 0)
+        return Dataset(
+            columns=dataset.columns,
+            train=normalized_train,
+            test=normalized_test,
+            train_targets=normalized_train_targets,
+            test_targets=normalized_test_targets,
+        )
+
+    @classmethod
+    def _apply_normalize(cls, matrix, column, idx):
+        normalized_values = getattr(cls, column, cls.default_normalize)(matrix[:, idx])
+
+        # Dealing with an array of arrays
+        if isinstance(normalized_values[0], numpy.ndarray):
+            matrix = numpy.delete(matrix, idx, axis=1)
+            matrix = numpy.insert(matrix, slice(idx, idx + 1), normalized_values, axis=1)
+            return matrix, len(normalized_values[0])
+        else:
+            matrix[:, idx] = normalized_values
+            return matrix, 1
 
     @staticmethod
     def default_normalize(column_data):
@@ -142,22 +168,41 @@ class M2MNormalizer(Normalizer):
         )
 
     @staticmethod
+    def edd(column_data):
+        return map(
+            lambda edd: 0 if edd == '---' else 1,
+            column_data,
+        )
+
+    @staticmethod
+    def province(column_data):
+        one_hot_encoder = preprocessing.OneHotEncoder()
+
+        mapped_provinces = M2MNormalizer._labeled_data(column_data)
+        one_hot_encoder.fit(mapped_provinces)
+        return one_hot_encoder.transform(mapped_provinces).toarray()
+
+    @staticmethod
     def age(column_data):
+        one_hot_encoder = preprocessing.OneHotEncoder()
         # <15, 15-24, over 25 are the usual PEPFAR
+
         def classify(age):
             if int(age) < 16:
-                return 'young'
+                return 0
             elif int(age) >= 16 and int(age) < 25:
-                return 'young-adult'
+                return 1
             elif int(age) >= 25 and int(age) < 30:
-                return '25-30'
+                return 2
             elif int(age) >= 30 and int(age) < 35:
-                return '30-35'
+                return 3
             elif int(age) >= 35 and int(age) < 40:
-                return '35-40'
+                return 4
             else:
-                return 'old'
-        return M2MNormalizer._labeled_data(map(classify, column_data))
+                return 5
+        mapped_ages = map(lambda age: [age], map(classify, column_data))
+        one_hot_encoder.fit(mapped_ages)
+        return one_hot_encoder.transform(mapped_ages).toarray()
 
     @staticmethod
     def _labeled_data(column_data):
