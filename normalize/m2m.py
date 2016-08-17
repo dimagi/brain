@@ -14,6 +14,7 @@ from ggplot import qplot
 LTFU_DAYS = 90
 DATE_OF_DOWNLOAD = datetime(2016, 7, 29)  # Date when dataset was fetched
 
+
 def explode_appointment(prefix):
     """
     Takes a prefix and returns relevant columns
@@ -40,6 +41,11 @@ def explode_appointment(prefix):
 class M2MFetcher(Fetcher):
     """
     Plase the mother case data in a csv file in data/m2m/mothers.csv
+    Other options:
+
+    mothers_small.csv
+    mothers_small_tail.csv
+    mothers_very_small.csv
     """
     data_filepath = os.path.join(PROJECT_ROOT, 'data', 'm2m', 'mothers_small_tail.csv')
     target_column = 'next_visit_date'
