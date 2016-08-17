@@ -11,7 +11,7 @@ from .abstract import Fetcher, Normalizer, Dataset
 from .utils import csv_fetch
 from ggplot import qplot
 
-LTFU_DAYS = 10
+LTFU_DAYS = 90
 DATE_OF_DOWNLOAD = datetime(2016, 7, 29)  # Date when dataset was fetched
 
 def explode_appointment(prefix):
