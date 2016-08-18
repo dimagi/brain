@@ -200,7 +200,7 @@ class M2MNormalizer(Normalizer):
         return M2MNormalizer._one_hot_encoder(column_data, n_values)
 
     @staticmethod
-    def country(column_data, n_values=5):
+    def country(column_data, n_values=11):
         return M2MNormalizer._one_hot_encoder(column_data, n_values)
 
     @staticmethod
