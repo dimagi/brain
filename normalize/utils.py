@@ -21,11 +21,15 @@ def csv_fetch(data_filepath, columns, target_column, pct_train=0.8):
     with open(data_filepath, 'rb') as f:
         reader = csv.DictReader(f)
         for row in reader:
+            value = getter(row)
+            if not isinstance(value, tuple):
+                value = [value]
+
             if random.random() <= pct_train:
-                train = numpy.append(train, getter(row), axis=0)
+                train = numpy.append(train, value, axis=0)
                 train_targets = numpy.append(train_targets, [row[target_column]], axis=0)
             else:
-                test = numpy.append(test, getter(row), axis=0)
+                test = numpy.append(test, value, axis=0)
                 test_targets = numpy.append(test_targets, [row[target_column]], axis=0)
 
     return Dataset(
