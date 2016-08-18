@@ -70,6 +70,7 @@ def relevance(ctx, classifier='', column=''):
 
     classifier_conf = CLASSIFIERS[classifier]
     fetcher = to_class(classifier_conf['fetcher'])()
+    fetcher.columns = [column]
     normalizer = to_class(classifier_conf['normalizer'])
     normalized_dataset = normalizer.normalize(fetcher.dataset())
 
