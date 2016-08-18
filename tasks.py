@@ -3,6 +3,7 @@ import importlib
 from invoke import task
 
 from settings import CLASSIFIERS
+from ggplot import qplot
 
 
 @task
@@ -19,8 +20,20 @@ def run(ctx, classifier=''):
     learner = to_class(classifier_conf['learner'])()
     learner.fit(normalized_dataset.train, normalized_dataset.train_targets)
 
-    score = learner.score(normalized_dataset.test, normalized_dataset.test_targets)
-    print score
+    predict = learner.predict(normalized_dataset.test)
+    print predict
+    # plt = qplot(predict[:, 1])
+    # print plt
+
+    # if hasattr(learner, 'roc_curve'):
+    #     print 'Calculating ROC curve...'
+    #     fpr, tpr, thresholds = learner.roc_curve(predict, normalized_dataset.test_targets)
+
+    if hasattr(learner, 'score_probs'):
+        print learner.score_probs(
+            map(lambda d: float(d[0]), normalized_dataset.test_targets),
+            predict[:, 1],
+        )
 
 
 @task

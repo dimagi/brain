@@ -73,6 +73,9 @@ class M2MLearn(object):
             pos_label='1',
         )
 
+    def score_probs(self, y_true, y_prob):
+        return metrics.brier_score_loss(y_true, y_prob)
+
     def score(self, datum, target):
         if not self.model:
             raise Exception('Must train model before predicting')
@@ -92,11 +95,15 @@ class DummyM2MLearn(object):
     def score(self, datum, target):
         correct = 0
         for t in target[:, 0]:
-            guess = '1' if random.random() <= self.model else '0'
+            guess = '0'
             if guess == t:
                 correct += 1
 
         return correct / float(len(target[:, 0]))
 
+    def score_probs(self, y_true, y_prob):
+        return metrics.brier_score_loss(y_true, y_prob)
+
     def predict(self, datum):
-        pass
+        predictions = map(lambda _: [1, 0], datum)
+        return numpy.array(predictions)
