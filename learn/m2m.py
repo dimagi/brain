@@ -3,6 +3,7 @@ import random
 from sklearn import svm, cross_validation, linear_model, metrics
 from matplotlib import pyplot as plt
 from ggplot import qplot
+from normalize import utils
 
 
 class M2MLearn(object):
@@ -47,7 +48,7 @@ class M2MLearn(object):
         for g_val in gamma:
             tmp_model = svm.SVC(gamma=g_val, C=self.C, probability=True)
             scores = cross_validation.cross_val_score(
-                tmp_model, data, target[:, 0], cv=5
+                tmp_model, data, target[:, 0], cv=5, scoring=utils.brier_scorer
             )
             print("Accuracy for %s: %0.2f (+/- %0.2f)" % (str(g_val), scores.mean(), scores.std() * 2))
 
