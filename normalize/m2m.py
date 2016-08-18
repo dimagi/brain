@@ -150,7 +150,15 @@ class M2MNormalizer(Normalizer):
         # Dealing with an array of arrays
         if isinstance(normalized_values[0], numpy.ndarray):
             matrix = numpy.delete(matrix, idx, axis=1)
-            matrix = numpy.insert(matrix, slice(idx, idx + 1), normalized_values, axis=1)
+            matrix = numpy.insert(
+                matrix,
+                idx,
+                numpy.reshape(
+                    normalized_values,
+                    list(reversed(normalized_values.shape)),
+                ),
+                axis=1
+            )
             return matrix, len(normalized_values[0])
         else:
             matrix[:, idx] = normalized_values
@@ -176,17 +184,28 @@ class M2MNormalizer(Normalizer):
     @staticmethod
     def edd(column_data):
         return map(
-            lambda edd: 0 if edd == '---' else 1,
+            lambda edd: 0 if edd == '---' or not edd else 1,
             column_data,
         )
 
     @staticmethod
-    def province(column_data):
-        one_hot_encoder = preprocessing.OneHotEncoder()
+    def date_of_conception(column_data):
+        return map(
+            lambda d: 0 if d == '---' or not d else 1,
+            column_data,
+        )
 
-        mapped_provinces = M2MNormalizer._labeled_data(column_data)
-        one_hot_encoder.fit(mapped_provinces)
-        return one_hot_encoder.transform(mapped_provinces).toarray()
+    @staticmethod
+    def province(column_data, n_values=10):
+        return M2MNormalizer._one_hot_encoder(column_data, n_values)
+
+    @staticmethod
+    def country(column_data, n_values=5):
+        return M2MNormalizer._one_hot_encoder(column_data, n_values)
+
+    @staticmethod
+    def client_status(column_data, n_values=6):
+        return M2MNormalizer._one_hot_encoder(column_data, n_values)
 
     @staticmethod
     def age(column_data):
@@ -209,6 +228,28 @@ class M2MNormalizer(Normalizer):
         mapped_ages = map(lambda age: [age], map(classify, column_data))
         one_hot_encoder.fit(mapped_ages)
         return one_hot_encoder.transform(mapped_ages).toarray()
+
+    @staticmethod
+    def _one_hot_encoder(column_data, n_values):
+        """
+        Converts labeled data to vectorized binaries:
+
+        [
+            'apple',
+            'bananna',
+            'apple'
+        ]
+        -->
+        [
+            [1, 0],
+            [0, 1],
+            [1, 0],
+        ]
+        """
+        one_hot_encoder = preprocessing.OneHotEncoder(n_values=n_values)
+        mapped_labels = map(lambda d: [d], M2MNormalizer._labeled_data(column_data))
+        one_hot_encoder.fit(mapped_labels)
+        return one_hot_encoder.transform(mapped_labels).toarray()
 
     @staticmethod
     def _labeled_data(column_data):

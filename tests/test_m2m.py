@@ -52,6 +52,22 @@ class TestNormalizer(TestCase):
 
         self.assertItemsEqual(result, expected)
 
+    def test_province(self):
+        column_data = [
+            'Western Cape',
+            'KwaZulu Natal',
+            'KwaZulu Natal',
+        ]
+        result = M2MNormalizer.province(column_data, 2)
+        expected = [
+            [1, 0],
+            [0, 1],
+            [0, 1],
+        ]
+        print result
+        for idx, row in enumerate(expected):
+            self.assertItemsEqual(result[idx], row)
+
     def test_normalize(self):
         dataset = Dataset(
             columns=np.array(['age', 'fruit', 'letter']),
@@ -74,6 +90,41 @@ class TestNormalizer(TestCase):
             [1, 0, 0, 1, 0],
             [0, 1, 0, 0, 1],
             [0, 0, 1, 2, 2],
+        ]
+        expected_train_targets = [
+            [0],
+            [0],
+            [1],
+        ]
+
+        for idx, row in enumerate(expected_train):
+            self.assertItemsEqual(normalized.train.astype(float)[idx], row)
+
+        for idx, row in enumerate(expected_train_targets):
+            self.assertItemsEqual(normalized.train_targets.astype(float)[idx], row)
+
+    def test_normalize_vector_length_one(self):
+        dataset = Dataset(
+            columns=np.array(['fruit', 'age']),
+            train=np.array([
+                ['banana', '14'],
+                ['apple', '35'],
+                ['pear', '56'],
+            ]),
+            test=np.array([
+                ['banana', '14'],
+                ['apple', '35'],
+                ['pear', '56'],
+            ]),
+            train_targets=np.array([['---'], ['2016-07-28'], ['2015-05-05']]),
+            test_targets=np.array([['---'], ['---'], ['---']]),
+        )
+
+        normalized = M2MNormalizer.normalize(dataset)
+        expected_train = [
+            [1, 1, 0, 0],
+            [0, 0, 1, 0],
+            [2, 0, 0, 1],
         ]
         expected_train_targets = [
             [0],
