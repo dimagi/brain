@@ -1,6 +1,9 @@
 import csv
 import random
 from operator import itemgetter
+from sklearn import metrics
+from matplotlib import pyplot as plt
+
 import numpy
 
 from .abstract import Dataset
@@ -43,3 +46,48 @@ def _explode_columns(columns):
             # Call exploding function
             exploded_columns.extend(column[1](column[0]))
     return exploded_columns
+
+
+def brier_scorer(estimator, X, y):
+    probabilities = estimator.predict_proba(X)
+    return metrics.brier_score_loss(
+        map(lambda d: float(d), y),
+        probabilities[:, 1],
+    )
+
+
+def heatmap(y_true, y_prob):
+    """
+    Outputs a heatmap for the given y_prob
+
+    :param: y_true - an array of truths (nparray)
+    :param: y_prob - an array of probabilities (nparray)
+    """
+    if len(y_prob.shape) == 1:
+        # Convert to 1d matrix
+        y_prob = numpy.reshape(y_prob, newshape=(y_prob.shape[0], 1))
+
+    max_prob = max(y_prob[:, 0])
+
+    if len(y_true.shape) == 1:
+        # Convert to 1d matrix
+        y_true = numpy.reshape(y_true, newshape=(y_true.shape[0], 1))
+
+    max_trues = numpy.reshape(
+        map(lambda x: min(x, max_prob), y_true[:, 0]),
+        newshape=y_true.shape,
+    )
+    data = numpy.append(y_prob, max_trues, axis=1)
+
+    plt.pcolor(data, cmap=plt.cm.Blues)
+    plt.show()
+
+
+def jitter(array):
+    """
+    Adds jitter to an array value for better viewing
+    """
+    return map(
+        lambda x: x + (random.random() * 0.2) - 0.1,
+        array,
+    )
