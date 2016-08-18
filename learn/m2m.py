@@ -35,8 +35,8 @@ class M2MLearn(object):
             test_targets,
         )
         plt.scatter(
-            test_column,
             numpy.array(range(len(test_column))),
+            utils.jitter(test_column),
             c=test_targets,
             cmap=plt.cm.Paired
         )
