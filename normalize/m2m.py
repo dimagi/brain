@@ -150,15 +150,13 @@ class M2MNormalizer(Normalizer):
         # Dealing with an array of arrays
         if isinstance(normalized_values[0], numpy.ndarray):
             matrix = numpy.delete(matrix, idx, axis=1)
-            matrix = numpy.insert(
-                matrix,
-                idx,
-                numpy.reshape(
-                    normalized_values,
-                    list(reversed(normalized_values.shape)),
-                ),
-                axis=1
-            )
+            for column in reversed(normalized_values.T):
+                matrix = numpy.insert(
+                    matrix,
+                    idx,
+                    column,
+                    axis=1
+                )
             return matrix, len(normalized_values[0])
         else:
             matrix[:, idx] = normalized_values
