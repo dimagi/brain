@@ -29,14 +29,22 @@ class TestNormalizer(TestCase):
     def test_age(self):
         column_data = [
             '14',
-            '35',
-            '56',
+            '16',
+            '19',
+            '20',
+            '27',
+            '39',
+            '38',
         ]
         result = M2MNormalizer.age(column_data)
         expected = [
-            [1, 0, 0],
-            [0, 1, 0],
-            [0, 0, 1],
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+            [0, 0, 0, 1],
         ]
         for idx, row in enumerate(expected):
             self.assertItemsEqual(result[idx], row)
@@ -109,27 +117,31 @@ class TestNormalizer(TestCase):
             train=np.array([
                 ['banana', '14'],
                 ['apple', '35'],
+                ['pear', '14'],
                 ['pear', '56'],
             ]),
             test=np.array([
                 ['banana', '14'],
                 ['apple', '35'],
                 ['pear', '56'],
+                ['pear', '56'],
             ]),
-            train_targets=np.array([['---'], ['2016-07-28'], ['2015-05-05']]),
-            test_targets=np.array([['---'], ['---'], ['---']]),
+            train_targets=np.array([['---'], ['2016-07-28'], ['2015-05-05'], ['---']]),
+            test_targets=np.array([['---'], ['---'], ['---'], ['---']]),
         )
 
         normalized = M2MNormalizer.normalize(dataset)
         expected_train = [
             [1, 1, 0, 0],
             [0, 0, 1, 0],
+            [2, 1, 0, 0],
             [2, 0, 0, 1],
         ]
         expected_train_targets = [
             [0],
             [0],
             [1],
+            [0],
         ]
 
         for idx, row in enumerate(expected_train):
