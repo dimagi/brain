@@ -1,9 +1,11 @@
 import importlib
+import numpy
 
 from invoke import task
 
 from settings import CLASSIFIERS
 from ggplot import qplot
+from normalize import utils
 
 
 @task
@@ -25,6 +27,10 @@ def run(ctx, classifier=''):
     # plt = qplot(predict[:, 1])
     # print plt
 
+    utils.heatmap(
+        numpy.array(map(lambda d: float(d[0]), normalized_dataset.test_targets)[:100]),
+        predict[:100, 1],
+    )
     # if hasattr(learner, 'roc_curve'):
     #     print 'Calculating ROC curve...'
     #     fpr, tpr, thresholds = learner.roc_curve(predict, normalized_dataset.test_targets)
