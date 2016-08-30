@@ -57,7 +57,7 @@ class M2MLearn(object):
         for c_val in C:
             tmp_model = svm.SVC(gamma=self.gamma, C=c_val, probability=True)
             scores = cross_validation.cross_val_score(
-                tmp_model, data, target[:, 0], cv=5
+                tmp_model, data, target[:, 0], cv=5, scoring=utils.brier_scorer
             )
             print("Accuracy for %s: %0.2f (+/- %0.2f)" % (str(c_val), scores.mean(), scores.std() * 2))
 
