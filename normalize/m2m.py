@@ -133,9 +133,18 @@ class M2MNormalizer(Normalizer):
             normalized_test, index_to_add = cls._apply_normalize(normalized_test, column, idx)
             idx += index_to_add
 
-        normalized_train_targets, _ = cls._apply_normalize(normalized_train_targets, 'target', 0)
-        normalized_test_targets, _ = cls._apply_normalize(normalized_test_targets, 'target', 0)
+        normalized_train_targets, _ = cls._apply_normalize(
+            normalized_train_targets,
+            dataset.target_column,
+            0
+        )
+        normalized_test_targets, _ = cls._apply_normalize(
+            normalized_test_targets,
+            dataset.target_column,
+            0
+        )
         return Dataset(
+            target_column=dataset.target_column,
             columns=dataset.columns,
             train=normalized_train,
             test=normalized_test,

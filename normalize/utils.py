@@ -33,6 +33,7 @@ def csv_fetch(data_filepath, columns, target_column, pct_train=0.8):
                 test_targets = numpy.append(test_targets, [row[target_column]], axis=0)
 
     return Dataset(
+        target_column=target_column,
         columns=numpy.array(exploded_columns),
         test=numpy.reshape(test, (-1, len(exploded_columns))),
         train=numpy.reshape(train, (-1, len(exploded_columns))),

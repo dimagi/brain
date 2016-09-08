@@ -19,4 +19,4 @@ class Normalizer(object):
 
 
 # columns are a inorder list of column headers for the train and test set
-Dataset = namedtuple('Dataset', ['columns', 'train', 'test', 'train_targets', 'test_targets'])
+Dataset = namedtuple('Dataset', ['target_column', 'columns', 'train', 'test', 'train_targets', 'test_targets'])
