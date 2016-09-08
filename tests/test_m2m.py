@@ -20,7 +20,7 @@ class TestNormalizer(TestCase):
             '',
         ]
 
-        result = M2MNormalizer.target(column_data)
+        result = M2MNormalizer.next_visit_date(column_data)
         self.assertItemsEqual(
             result,
             [0, 0, 1, 0],
@@ -66,18 +66,32 @@ class TestNormalizer(TestCase):
             'KwaZulu Natal',
             'KwaZulu Natal',
         ]
-        result = M2MNormalizer.province(column_data, 2)
+        result = M2MNormalizer.province(column_data, n_values=2)
         expected = [
             [1, 0],
             [0, 1],
             [0, 1],
         ]
-        print result
         for idx, row in enumerate(expected):
             self.assertItemsEqual(result[idx], row)
 
+    def test_an2_status(self):
+        column_data = [
+            'Done On Time',
+            'Done On Time',
+            'Done Late',
+        ]
+        result = M2MNormalizer.an2_status(column_data)
+        expected = [
+            0,
+            0,
+            1,
+        ]
+        self.assertItemsEqual(result, expected)
+
     def test_normalize(self):
         dataset = Dataset(
+            target_column='next_visit_date',
             columns=np.array(['age', 'fruit', 'letter']),
             train=np.array([
                 ['14', 'banana', 'a'],
@@ -128,6 +142,7 @@ class TestNormalizer(TestCase):
             ]),
             train_targets=np.array([['---'], ['2016-07-28'], ['2015-05-05'], ['---']]),
             test_targets=np.array([['---'], ['---'], ['---'], ['---']]),
+            target_column='next_visit_date',
         )
 
         normalized = M2MNormalizer.normalize(dataset)
