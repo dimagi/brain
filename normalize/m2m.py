@@ -118,7 +118,7 @@ class M2MNormalizer(Normalizer):
     computed_columns = []
 
     @classmethod
-    def normalize(cls, dataset):
+    def normalize(cls, dataset, for_relevance=False):
         def reshape(data):
             return numpy.reshape(data, (-1, 1))
 
@@ -129,19 +129,31 @@ class M2MNormalizer(Normalizer):
         normalized_test_targets = dataset.test_targets
 
         for column in dataset.columns:
-            normalized_train, index_to_add = cls._apply_normalize(normalized_train, column, idx)
-            normalized_test, index_to_add = cls._apply_normalize(normalized_test, column, idx)
+            normalized_train, index_to_add = cls._apply_normalize(
+                normalized_train,
+                column,
+                idx,
+                for_relevance,
+            )
+            normalized_test, index_to_add = cls._apply_normalize(
+                normalized_test,
+                column,
+                idx,
+                for_relevance,
+            )
             idx += index_to_add
 
         normalized_train_targets, _ = cls._apply_normalize(
             normalized_train_targets,
             dataset.target_column,
-            0
+            0,
+            for_relevance,
         )
         normalized_test_targets, _ = cls._apply_normalize(
             normalized_test_targets,
             dataset.target_column,
-            0
+            0,
+            for_relevance,
         )
         return Dataset(
             target_column=dataset.target_column,
@@ -153,8 +165,8 @@ class M2MNormalizer(Normalizer):
         )
 
     @classmethod
-    def _apply_normalize(cls, matrix, column, idx):
-        normalized_values = getattr(cls, column, cls.default_normalize)(matrix[:, idx])
+    def _apply_normalize(cls, matrix, column, idx, for_relevance=False):
+        normalized_values = getattr(cls, column, cls.default_normalize)(matrix[:, idx], for_relevance)
 
         # Dealing with an array of arrays
         if isinstance(normalized_values[0], numpy.ndarray):
@@ -172,11 +184,26 @@ class M2MNormalizer(Normalizer):
             return matrix, 1
 
     @staticmethod
-    def default_normalize(column_data):
+    def default_normalize(column_data, for_relevance=False):
         return M2MNormalizer._labeled_data(column_data)
 
     @staticmethod
-    def target(column_data):
+    def an2_status(column_data, for_relevance=False):
+        def classify(status):
+            if 'Done Late' != status and 'Done On Time' != status:
+                raise Exception('Bad Data')
+            try:
+                return 1 if status == 'Done Late' else 0
+            except ValueError:
+                return 0
+
+        return map(
+            classify,
+            column_data,
+        )
+
+    @staticmethod
+    def next_visit_date(column_data, for_relevance=False):
         def classify(date):
             try:
                 return int((DATE_OF_DOWNLOAD - parse(date)).days > LTFU_DAYS)
@@ -189,33 +216,42 @@ class M2MNormalizer(Normalizer):
         )
 
     @staticmethod
-    def edd(column_data):
+    def edd(column_data, for_relevance=False):
         return map(
             lambda edd: 0 if edd == '---' or not edd else 1,
             column_data,
         )
 
     @staticmethod
-    def date_of_conception(column_data):
+    def date_of_conception(column_data, for_relevance=False):
         return map(
             lambda d: 0 if d == '---' or not d else 1,
             column_data,
         )
 
     @staticmethod
-    def province(column_data, n_values=10):
+    def province(column_data, for_relevance=False, n_values=10):
+        # return M2MNormalizer._labeled_data(column_data)
         return M2MNormalizer._one_hot_encoder(column_data, n_values)
 
     @staticmethod
-    def country(column_data, n_values=11):
+    def country(column_data, for_relevance=False, n_values=11):
         return M2MNormalizer._one_hot_encoder(column_data, n_values)
 
     @staticmethod
-    def client_status(column_data, n_values=6):
+    def client_status(column_data, for_relevance=False, n_values=6):
         return M2MNormalizer._one_hot_encoder(column_data, n_values)
 
     @staticmethod
-    def age(column_data):
+    def acfu_status(column_data, for_relevance=False, n_values=6):
+        return M2MNormalizer._one_hot_encoder(column_data, n_values)
+
+    @staticmethod
+    def partner_hiv_status(column_data, for_relevance=False, n_values=6):
+        return M2MNormalizer._one_hot_encoder(column_data, n_values)
+
+    @staticmethod
+    def age(column_data, for_relevance=False):
         one_hot_encoder = preprocessing.OneHotEncoder()
         # <15, 15-24, over 25 are the usual PEPFAR
 
@@ -232,6 +268,8 @@ class M2MNormalizer(Normalizer):
                 return 4
             else:
                 return 5
+        if for_relevance:
+            return map(classify, column_data)
         mapped_ages = map(lambda age: [age], map(classify, column_data))
         one_hot_encoder.fit(mapped_ages)
         return one_hot_encoder.transform(mapped_ages).toarray()
@@ -259,7 +297,7 @@ class M2MNormalizer(Normalizer):
         return one_hot_encoder.transform(mapped_labels).toarray()
 
     @staticmethod
-    def _labeled_data(column_data):
+    def _labeled_data(column_data, for_relevance=False):
         le = preprocessing.LabelEncoder()
         le.fit(column_data)
         return le.transform(column_data)
